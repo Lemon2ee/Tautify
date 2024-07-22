@@ -1,15 +1,13 @@
-use crate::utils::oauth::generate_random_string;
-use base64::{engine::general_purpose::URL_SAFE, Engine as _};
+use base64::{Engine as _, engine::general_purpose::URL_SAFE};
 use reqwest::Url;
-use sha2::{Digest, Sha256};
-use tauri_plugin_shell::ShellExt;
-
 use serde_json::json;
+use sha2::{Digest, Sha256};
 use tauri::{AppHandle, Manager, State, Wry};
-use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
-use tauri_plugin_store::{with_store, StoreCollection};
+use tauri_plugin_shell::ShellExt;
+use tauri_plugin_store::{StoreCollection, with_store};
 
 use crate::state::TauriState;
+use crate::utils::oauth::generate_random_string;
 
 const VERIFIER_LENGTH: i32 = 64;
 const AUTH_STATE_LENGTH: i32 = 16;
@@ -63,13 +61,11 @@ pub fn handle_sign_in(state: State<'_, TauriState>, app: AppHandle) -> Result<()
         .open(auth_url.as_str(), None)
         .expect("Failed to open authorization URL in browser");
 
-    match with_store(app.app_handle().clone(), stores, &state.path, |store| {
+    with_store(app.app_handle().clone(), stores, &state.path, |store| {
         store.insert("auth_verifier".to_string(), json!(code_verifier))?;
         store.insert("auth_state".to_string(), json!(spotify_auth_state))?;
         store.save()?;
         Ok(())
-    }) {
-        Ok(_) => Ok(()),
-        Err(_) => return Err("An error occurred while storing the data".to_string()),
-    }
+    })
+    .map_err(|_| "An error occurred while storing the data".to_string())
 }
