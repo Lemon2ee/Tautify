@@ -16,6 +16,11 @@
     "menu:default",
     "tray:default",
     "deep-link:default",
-    "dialog:default"
+    "dialog:default",
+    "shell:default",
+    "store:default",
+    "stronghold:default",
+    "store:default",
+    "shell:allow-open"
   ]
 }
