@@ -1,7 +1,7 @@
 {
   "productName": "tauri-spotify-v2",
   "version": "0.1.0",
-  "identifier": "com.tauri.dev",
+  "identifier": "com.lemon2ee.tauri",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
@@ -33,5 +33,13 @@
       "icons/icon.ico"
     ]
   },
-  "$schema": "../node_modules/@tauri-apps/cli/schema.json"
+  "$schema": "../node_modules/@tauri-apps/cli/schema.json",
+  "plugins": {
+    "deep-link": {
+      "mobile": [],
+      "desktop": {
+        "schemes": ["taurispotify"]
+      }
+    }
+  }
 }

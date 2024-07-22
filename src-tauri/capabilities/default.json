@@ -15,6 +15,7 @@
     "image:default",
     "menu:default",
     "tray:default",
-    "deep-link:default"
+    "deep-link:default",
+    "dialog:default"
   ]
 }
