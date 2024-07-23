@@ -1,6 +1,5 @@
 use std::path::PathBuf;
 
-use serde::{Deserialize, Serialize};
 use tauri::{Listener, Manager};
 
 use crate::auth::sign_in::handle_sign_in;
@@ -9,16 +8,8 @@ use crate::state::TauriState;
 mod auth;
 mod deep_link;
 mod state;
+mod token_manager;
 mod utils;
-
-#[derive(Debug, Serialize, Deserialize)]
-struct AccessTokenRequest {
-    grant_type: String,
-    code: String,
-    redirect_uri: String,
-    client_id: String,
-    code_verifier: String,
-}
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -30,9 +21,11 @@ pub fn run() {
         .setup(|app| {
             let handle = app.handle().clone();
             let path = PathBuf::from("store.bin");
-            app.manage(TauriState::new(path));
+            let token_manager = token_manager::TokenManager::new(app.handle().clone());
+            app.manage(TauriState::new(path, token_manager));
             app.listen("deep-link://new-url", move |event| {
                 tauri::async_runtime::block_on(deep_link::handler(&event, &handle))
+                    .expect("Error while handling deep link");
             });
             Ok(())
         })

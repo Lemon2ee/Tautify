@@ -2,9 +2,8 @@ use base64::{Engine as _, engine::general_purpose::URL_SAFE};
 use reqwest::Url;
 use serde_json::json;
 use sha2::{Digest, Sha256};
-use tauri::{AppHandle, Manager, State, Wry};
+use tauri::{AppHandle, Manager, State};
 use tauri_plugin_shell::ShellExt;
-use tauri_plugin_store::{StoreCollection, with_store};
 
 use crate::state::TauriState;
 use crate::utils::oauth::generate_random_string;
@@ -13,7 +12,7 @@ const VERIFIER_LENGTH: i32 = 64;
 const AUTH_STATE_LENGTH: i32 = 16;
 
 #[tauri::command]
-pub fn handle_sign_in(state: State<'_, TauriState>, app: AppHandle) -> Result<(), String> {
+pub fn handle_sign_in(state: State<'_, TauriState>, app: AppHandle) {
     // TODO: Find a way to include env variables in the built app.
     let client_id = "cae266e13c41412ead421bf581bc0609";
     let redirect_uri = "taurispotify://api/callback/";
@@ -40,9 +39,6 @@ pub fn handle_sign_in(state: State<'_, TauriState>, app: AppHandle) -> Result<()
     let trimmed = code_verifier_hash_encoded.trim_end_matches('=').to_string();
     let spotify_auth_state: String = generate_random_string(AUTH_STATE_LENGTH);
 
-    // Using https://v2.tauri.app/plugin/store/, TODO: verify security.
-    let stores = app.state::<StoreCollection<Wry>>();
-
     let auth_url = Url::parse_with_params(
         "https://accounts.spotify.com/authorize",
         &[
@@ -61,11 +57,16 @@ pub fn handle_sign_in(state: State<'_, TauriState>, app: AppHandle) -> Result<()
         .open(auth_url.as_str(), None)
         .expect("Failed to open authorization URL in browser");
 
-    with_store(app.app_handle().clone(), stores, &state.path, |store| {
-        store.insert("auth_verifier".to_string(), json!(code_verifier))?;
-        store.insert("auth_state".to_string(), json!(spotify_auth_state))?;
-        store.save()?;
-        Ok(())
-    })
-    .map_err(|_| "An error occurred while storing the data".to_string())
+    let token_manager = &state.token_manager;
+
+    token_manager.save("auth_verifier", json!(code_verifier));
+    token_manager.save("auth_state", json!(spotify_auth_state));
+    //
+    // with_store(app.app_handle().clone(), stores, &state.path, |store| {
+    //     store.insert("auth_verifier".to_string(), json!(code_verifier))?;
+    //     store.insert("auth_state".to_string(), json!(spotify_auth_state))?;
+    //     store.save()?;
+    //     Ok(())
+    // })
+    // .map_err(|_| "An error occurred while storing the data".to_string())
 }

@@ -1,19 +1,38 @@
-use tauri::{AppHandle, Manager, State, Wry};
+use anyhow::{anyhow, Result};
+use serde::{Deserialize, Serialize};
+use serde_json::json;
+use tauri::{AppHandle, Emitter, Manager};
 use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
-use tauri_plugin_store::{StoreCollection, with_store};
 use url::Url;
 
-use crate::AccessTokenRequest;
 use crate::state::TauriState;
 
-pub(crate) async fn handler(event: &tauri::Event, app: &AppHandle) {
+#[derive(Debug, Serialize, Deserialize)]
+struct AccessTokenRequest {
+    grant_type: String,
+    code: String,
+    redirect_uri: String,
+    client_id: String,
+    code_verifier: String,
+}
+
+#[derive(Deserialize)]
+struct SpotifyTokenResponse {
+    access_token: String,
+    token_type: String,
+    expires_in: u64,
+    refresh_token: String,
+    scope: String,
+}
+
+pub(crate) async fn handler(event: &tauri::Event, app: &AppHandle) -> Result<()> {
     log::info!("received deep link");
     let callback_url = "taurispotify://api/callback/";
     let payload = event.payload();
 
     // remove []'s
     let Some(link) = payload.get(2..payload.len() - 2) else {
-        return;
+        return Err(anyhow::anyhow!("Something went wrong"));
     };
 
     // Right now, it would only have a callback route to handle spotify OAUTH redirect, more route
@@ -21,13 +40,19 @@ pub(crate) async fn handler(event: &tauri::Event, app: &AppHandle) {
     // else loop)
     if !link.starts_with(callback_url) {
         pop_up(app, link, "link_mismatch");
-        return;
+        return Err(anyhow::anyhow!(
+            "deep-link: bad request, unrecognized route"
+        ));
     }
 
     let state = app.state::<TauriState>();
-    let stores = app.state::<StoreCollection<Wry>>();
 
-    let (auth_state, auth_verifier) = get_auth_from_store(app, &state, stores);
+    let token_manager = &state.token_manager;
+
+    let (auth_state, auth_verifier) = (
+        token_manager.kv_store_read_str("auth_state").unwrap(),
+        token_manager.kv_store_read_str("auth_verifier").unwrap(),
+    );
 
     let url = Url::parse(link).expect("Error parsing URL for sign in");
     let pairs = url.query_pairs();
@@ -46,22 +71,16 @@ pub(crate) async fn handler(event: &tauri::Event, app: &AppHandle) {
     let callback_auth_state = callback_auth_state.unwrap();
 
     // Check if both 'code' and 'state' parameters are present
-    if callback_auth_code.is_empty() {
+    if callback_auth_code.is_empty()
+        || callback_auth_state.is_empty()
+        || callback_auth_state != auth_state
+    {
         pop_up(
             app,
-            "Error processing Spotify OAuth authentication code, aborting",
+            "Error processing Spotify OAUTH authentication, aborting",
             "GTFO",
         );
-        return;
-    }
-
-    if callback_auth_state.is_empty() || callback_auth_state != auth_state {
-        pop_up(
-            app,
-            "Error processing Spotify OAuth authentication state, aborting",
-            "GTFO",
-        );
-        return;
+        return Err(anyhow::anyhow!("deep-link: Spotify call back missing either authentication state or authentication code, or authentication state mismatch"));
     }
 
     // TODO: this is bullshit
@@ -85,41 +104,49 @@ pub(crate) async fn handler(event: &tauri::Event, app: &AppHandle) {
         .await
         .unwrap();
 
-    pop_up(app, &*response.text().await.unwrap(), "Auth Successful")
+    let response_json = response.json::<SpotifyTokenResponse>().await.unwrap();
+    token_manager.save("access_token", json!(response_json.access_token));
+    token_manager.save("token_type", json!(response_json.token_type));
+    token_manager.save("scope", json!(response_json.scope));
+    token_manager.save("refresh_token", json!(response_json.refresh_token));
+    token_manager.save_expire_in(response_json.expires_in);
+
+    user_info_fetch(app).await.unwrap();
+
+    Ok(())
 }
 
-fn get_auth_from_store(
-    app: &AppHandle,
-    state: &State<TauriState>,
-    stores: State<StoreCollection<Wry>>,
-) -> (String, String) {
-    // Extract the following value from local storage:
-    //  1. Authentication state: Used for authenticating callback and prevent CSRF
-    //  2. Authentication Verifier: Generated at the initial login request, appending it now for
-    //     validation.
-    with_store(app.app_handle().clone(), stores, &state.path, |store| {
-        // Use match to handle potential errors from store.get()
-        let auth_state = store
-            .get("auth_state")
-            .expect("Failed to get value from store")
-            // Not essentially the `as` keyword in Typescript, check:
-            // https://docs.rs/serde_json/latest/serde_json/value/enum.Value.html#method.as_str
-            // to_string() does not work well here.
-            .as_str()
-            .expect("auth_state is not a string")
-            .to_string(); // Clone the string
+#[derive(Debug, Serialize, Deserialize)]
+struct ProfileRequest {
+    grant_type: String,
+    code: String,
+    redirect_uri: String,
+    client_id: String,
+    code_verifier: String,
+}
 
-        let auth_verifier = store
-            .get("auth_verifier")
-            .expect("Failed to get value from store")
-            .as_str()
-            .expect("auth_verifier is not a string")
-            .to_string(); // Clone the string
+async fn user_info_fetch(app: &AppHandle) -> Result<()> {
+    let url = "https://api.spotify.com/v1/me";
+    let tauri_state = &app.state::<TauriState>();
+    let token = tauri_state.token_manager.kv_store_read_str("access_token");
 
-        // Ensure the types match the expected return type of the closure
-        Ok((auth_state, auth_verifier))
-    })
-    .expect("Failed to execute with_store")
+    let response = tauri_state
+        .client
+        .get(url)
+        .header("Authorization", format!("Bearer {}", &token.unwrap()))
+        .send()
+        .await?;
+
+    // Check if the request was successful
+    if response.status().is_success() {
+        let body = response.text().await?;
+        app.emit("login_complete", body)
+            .expect("Failed to emit login_complete event");
+    } else {
+        return Err(anyhow!("Something is wrong"));
+    }
+
+    Ok(())
 }
 
 fn pop_up(app: &AppHandle, message: &str, title: &str) {
