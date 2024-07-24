@@ -1,4 +1,4 @@
-use anyhow::{anyhow, Result};
+use anyhow::Result;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tauri::{AppHandle, Emitter, Manager};
@@ -47,11 +47,11 @@ pub(crate) async fn handler(event: &tauri::Event, app: &AppHandle) -> Result<()>
 
     let state = app.state::<TauriState>();
 
-    let token_manager = &state.token_manager;
+    let mut store = state.store.lock().await;
 
     let (auth_state, auth_verifier) = (
-        token_manager.kv_store_read_str("auth_state").unwrap(),
-        token_manager.kv_store_read_str("auth_verifier").unwrap(),
+        store.get("auth_state").unwrap().as_str().unwrap(),
+        store.get("auth_verifier").unwrap().as_str().unwrap(),
     );
 
     let url = Url::parse(link).expect("Error parsing URL for sign in");
@@ -92,7 +92,7 @@ pub(crate) async fn handler(event: &tauri::Event, app: &AppHandle) -> Result<()>
         code: callback_auth_code.clone(),
         redirect_uri: redirect_uri.to_string(),
         client_id: client_id.to_string(),
-        code_verifier: auth_verifier.clone(),
+        code_verifier: auth_verifier.to_string(),
     };
 
     // TODO: this should be replace by the client within the state.
@@ -105,13 +105,30 @@ pub(crate) async fn handler(event: &tauri::Event, app: &AppHandle) -> Result<()>
         .unwrap();
 
     let response_json = response.json::<SpotifyTokenResponse>().await.unwrap();
-    token_manager.save("access_token", json!(response_json.access_token));
-    token_manager.save("token_type", json!(response_json.token_type));
-    token_manager.save("scope", json!(response_json.scope));
-    token_manager.save("refresh_token", json!(response_json.refresh_token));
-    token_manager.save_expire_in(response_json.expires_in);
+    store
+        .insert(
+            "access_token".to_string(),
+            json!(response_json.access_token),
+        )
+        .expect("TODO: panic message");
+    store
+        .insert("token_type".to_string(), json!(response_json.token_type))
+        .expect("TODO: panic message");
+    store
+        .insert("scope".to_string(), json!(response_json.scope))
+        .expect("TODO: panic message");
+    store
+        .insert(
+            "refresh_token".to_string(),
+            json!(response_json.refresh_token),
+        )
+        .expect("TODO: panic message");
 
-    user_info_fetch(app).await.unwrap();
+    store.save().expect("Failed to save to store");
+    // store.save_expire_in(response_json.expires_in);
+    app.emit("login_complete", "")
+        .expect("Failed to emit login_complete event");
+    // user_info_fetch(app).await.unwrap();
 
     Ok(())
 }
@@ -125,29 +142,29 @@ struct ProfileRequest {
     code_verifier: String,
 }
 
-async fn user_info_fetch(app: &AppHandle) -> Result<()> {
-    let url = "https://api.spotify.com/v1/me";
-    let tauri_state = &app.state::<TauriState>();
-    let token = tauri_state.token_manager.kv_store_read_str("access_token");
-
-    let response = tauri_state
-        .client
-        .get(url)
-        .header("Authorization", format!("Bearer {}", &token.unwrap()))
-        .send()
-        .await?;
-
-    // Check if the request was successful
-    if response.status().is_success() {
-        let body = response.text().await?;
-        app.emit("login_complete", body)
-            .expect("Failed to emit login_complete event");
-    } else {
-        return Err(anyhow!("Something is wrong"));
-    }
-
-    Ok(())
-}
+// async fn user_info_fetch(app: &AppHandle) -> Result<()> {
+//     let url = "https://api.spotify.com/v1/me";
+//     let tauri_state = &app.state::<TauriState>();
+//     let token = tauri_state.token_manager.kv_store_read_str("access_token");
+//
+//     let response = tauri_state
+//         .client
+//         .get(url)
+//         .header("Authorization", format!("Bearer {}", &token.unwrap()))
+//         .send()
+//         .await?;
+//
+//     // Check if the request was successful
+//     if response.status().is_success() {
+//         let body = response.text().await?;
+//         app.emit("login_complete", body)
+//             .expect("Failed to emit login_complete event");
+//     } else {
+//         return Err(anyhow!("Something is wrong"));
+//     }
+//
+//     Ok(())
+// }
 
 fn pop_up(app: &AppHandle, message: &str, title: &str) {
     app.dialog()
