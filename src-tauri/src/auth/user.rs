@@ -22,13 +22,6 @@ pub async fn get_user_info(state: State<'_, TauriState>) -> Result<SpotifyRespon
 pub async fn get_user_token(state: State<'_, TauriState>) -> Result<String, String> {
     let store = state.store.lock().await;
 
-    let keys = store.keys();
-
-    // Print each key
-    for key in keys {
-        println!("{}", key);
-    }
-
     match store.get("access_token") {
         Some(value) => Ok(value.to_string()),
         None => Err("Access token not found".to_string()),

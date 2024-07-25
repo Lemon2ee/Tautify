@@ -20,7 +20,8 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import ProfileDropdown from "@/app/home/profileMenu";
+import ProfileDropdown from "@/app/home/components/profileMenu";
+import WebPlayback from "@/app/home/components/spotify/webPlayback";
 
 export default function Content() {
   return (
@@ -126,13 +127,7 @@ export default function Content() {
           x-chunk="dashboard-02-chunk-1"
         >
           <div className="flex flex-col items-center gap-1 text-center">
-            <h3 className="text-2xl font-bold tracking-tight">
-              You have no products
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              You can start selling as soon as you add a product.
-            </p>
-            <Button className="mt-4">Add Product</Button>
+            <WebPlayback />
           </div>
         </div>
       </main>

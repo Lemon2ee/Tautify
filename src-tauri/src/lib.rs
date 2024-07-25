@@ -2,6 +2,7 @@ use std::path::PathBuf;
 
 use tauri::{Listener, Manager};
 use tauri_plugin_store::StoreBuilder;
+use window_vibrancy::*;
 
 use crate::auth::sign_in::handle_sign_in;
 use crate::auth::user::get_user_info;
@@ -31,6 +32,21 @@ pub fn run() {
                 tauri::async_runtime::block_on(deep_link::handler(&event, &handle))
                     .expect("Error while handling deep link");
             });
+
+            let window = app.get_webview_window("main").unwrap();
+
+            #[cfg(target_os = "macos")]
+            apply_vibrancy(
+                &window,
+                NSVisualEffectMaterial::HudWindow,
+                Some(NSVisualEffectState::Active),
+                Some(3.7_f64),
+            )
+            .expect("Unsupported platform! 'apply_vibrancy' is only supported on macOS");
+
+            #[cfg(target_os = "windows")]
+            apply_blur(&window, Some((18, 18, 18, 125)))
+                .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![
