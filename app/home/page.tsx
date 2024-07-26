@@ -1,9 +1,10 @@
-import Content from "@/app/home/components/content";
+import Component from "./components/test";
 
-export default function Home() {
+export default function Content() {
   return (
-    <>
-      <Content />
-    </>
+    // flex row for playlist details
+    <div className="flex p-6 w-full">
+      <Component />
+    </div>
   );
 }

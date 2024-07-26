@@ -5,10 +5,13 @@ use window_vibrancy::*;
 
 use crate::auth::sign_in::handle_sign_in;
 use crate::auth::user::get_user_info;
+use crate::auth::user::get_user_playlists;
 use crate::auth::user::get_user_token;
+use crate::commands::playlist::get_playlist_info;
 use crate::state::TauriState;
 
 mod auth;
+mod commands;
 mod deep_link;
 mod state;
 mod token_manager;
@@ -60,7 +63,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             handle_sign_in,
             get_user_info,
-            get_user_token
+            get_user_token,
+            get_user_playlists,
+            get_playlist_info
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
