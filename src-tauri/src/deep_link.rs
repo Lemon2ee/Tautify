@@ -1,4 +1,5 @@
 use anyhow::Result;
+use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use tauri::{AppHandle, Emitter, Manager};
@@ -17,12 +18,12 @@ struct AccessTokenRequest {
 }
 
 #[derive(Deserialize)]
-struct SpotifyTokenResponse {
-    access_token: String,
-    token_type: String,
-    expires_in: u64,
-    refresh_token: String,
-    scope: String,
+pub struct SpotifyTokenResponse {
+    pub access_token: String,
+    pub token_type: String,
+    pub expires_in: i64,
+    pub refresh_token: String,
+    pub scope: String,
 }
 
 pub(crate) async fn handler(event: &tauri::Event, app: &AppHandle) -> Result<()> {
@@ -110,19 +111,26 @@ pub(crate) async fn handler(event: &tauri::Event, app: &AppHandle) -> Result<()>
             "access_token".to_string(),
             json!(response_json.access_token),
         )
-        .expect("TODO: panic message");
+        .expect("Failed to store access_token");
     store
         .insert("token_type".to_string(), json!(response_json.token_type))
-        .expect("TODO: panic message");
+        .expect("Failed to store token_type");
     store
         .insert("scope".to_string(), json!(response_json.scope))
-        .expect("TODO: panic message");
+        .expect("Failed to store Spotify API scope");
     store
         .insert(
             "refresh_token".to_string(),
             json!(response_json.refresh_token),
         )
-        .expect("TODO: panic message");
+        .expect("Failed to store Spotify API refresh token");
+
+    let current_time = Utc::now().timestamp();
+    let expire_time = current_time + response_json.expires_in;
+
+    store
+        .insert("expires_at".to_string(), json!(expire_time))
+        .expect("Failed to store expires time");
 
     store.save().expect("Failed to save to store");
     // store.save_expire_in(response_json.expires_in);
@@ -141,30 +149,6 @@ struct ProfileRequest {
     client_id: String,
     code_verifier: String,
 }
-
-// async fn user_info_fetch(app: &AppHandle) -> Result<()> {
-//     let url = "https://api.spotify.com/v1/me";
-//     let tauri_state = &app.state::<TauriState>();
-//     let token = tauri_state.token_manager.kv_store_read_str("access_token");
-//
-//     let response = tauri_state
-//         .client
-//         .get(url)
-//         .header("Authorization", format!("Bearer {}", &token.unwrap()))
-//         .send()
-//         .await?;
-//
-//     // Check if the request was successful
-//     if response.status().is_success() {
-//         let body = response.text().await?;
-//         app.emit("login_complete", body)
-//             .expect("Failed to emit login_complete event");
-//     } else {
-//         return Err(anyhow!("Something is wrong"));
-//     }
-//
-//     Ok(())
-// }
 
 fn pop_up(app: &AppHandle, message: &str, title: &str) {
     app.dialog()

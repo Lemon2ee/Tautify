@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { Disc3, Home, Package } from "lucide-react";
+import { Disc3, Home, UserRoundCog } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const navItems = [
   {
@@ -15,28 +15,26 @@ const navItems = [
   },
   {
     href: "#",
-    icon: <Package className="h-4 w-4" />,
-    text: "Products",
+    icon: <UserRoundCog className="h-4 w-4" />,
+    text: "Profile",
     badge: null,
-    path: "/product",
+    path: "/profile",
   },
 ];
+
 export default function Sidebar() {
   const currentPath = usePathname();
 
   return (
-    <div className="hidden border-r bg-muted/40 md:block">
+    <div className="hidden md:block">
       <div className="flex h-full max-h-screen flex-col gap-2">
-        <div className="flex h-14 items-center border-b px-4 lg:h-[60px] lg:px-6">
+        <div className="flex h-14 items-center px-4 lg:h-[60px] lg:px-6">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <Disc3 className="h-6 w-6" />
             <span className="">Tauri-Spotify</span>
           </Link>
-          {/*<Button variant="outline" size="icon" className="ml-auto h-8 w-8">*/}
-          {/*  <Bell className="h-4 w-4" />*/}
-          {/*  <span className="sr-only">Toggle notifications</span>*/}
-          {/*</Button>*/}
         </div>
+
         <div className="flex-1">
           <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
             {navItems.map((item, index) => (
@@ -47,7 +45,7 @@ export default function Sidebar() {
                   item.path === "/"
                     ? currentPath === item.path
                     : currentPath.startsWith(item.path)
-                      ? "bg-muted text-primary"
+                      ? "bg-zinc-700/80 shadow text-primary"
                       : ""
                 }
                 text-muted-foreground transition-all hover:text-primary`}
@@ -58,8 +56,36 @@ export default function Sidebar() {
               </Link>
             ))}
           </nav>
-          <Separator className={"mt-1"} />
         </div>
+
+        <ScrollArea className="rounded-md h-full border m-2 p-2 lg:m-4 bg-zinc-900/30">
+            Jokester began sneaking into the castle in the middle of the night
+            and leaving jokes all over the place: under the king's pillow, in
+            his soup, even in the royal toilet. The king was furious, but he
+            couldn't seem to stop Jokester. And then, one day, the people of the
+            kingdom discovered that the jokes left by Jokester were so funny
+            that they couldn't help but laugh. And once they started laughing,
+            they couldn't stop. Jokester began sneaking into the castle in the
+            middle of the night and leaving jokes all over the place: under the
+            king's pillow, in his soup, even in the royal toilet. The king was
+            furious, but he couldn't seem to stop Jokester. And then, one day,
+            the people of the kingdom discovered that the jokes left by Jokester
+            were so funny that they couldn't help but laugh. And once they
+            started laughing, they couldn't stop.Jokester began sneaking into
+            the castle in the middle of the night and leaving jokes all over the
+            place: under the king's pillow, in his soup, even in the royal
+            toilet. The king was furious, but he couldn't seem to stop Jokester.
+            And then, one day, the people of the kingdom discovered that the
+            jokes left by Jokester were so funny that they couldn't help but
+            laugh. And once they started laughing, they couldn't stop.Jokester
+            began sneaking into the castle in the middle of the night and
+            leaving jokes all over the place: under the king's pillow, in his
+            soup, even in the royal toilet. The king was furious, but he
+            couldn't seem to stop Jokester. And then, one day, the people of the
+            kingdom discovered that the jokes left by Jokester were so funny
+            that they couldn't help but laugh. And once they started laughing,
+            they couldn't stop.
+          </ScrollArea>
       </div>
     </div>
   );

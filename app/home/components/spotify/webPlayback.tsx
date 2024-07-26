@@ -68,35 +68,31 @@ function WebPlayback() {
       player.addListener("player_state_changed", (state) => {
         if (!state) {
           console.error(
-            "User is not playing music through the Web Playback SDK",
+            "User is not playing music through the Web Playback SDK"
           );
+          setActive(false);
           return;
         }
 
         setTrack(state.track_window.current_track);
         setPaused(state.paused);
 
-        // if (player) {
-        //   console.log(player);
-        //   player.getCurrentState().then((state) => {
-        //     if (state) {
-        //       console.log(state);
-        //     }
-        //   });
-        // }
+        player.getCurrentState().then((state) => {
+          !state ? setActive(false) : setActive(true);
+        });
       });
 
       player.connect().then((success) => {
         if (success) {
           console.log(
-            "The Web Playback SDK successfully connected to Spotify!",
+            "The Web Playback SDK successfully connected to Spotify!"
           );
         }
       });
     }
   }, [player]);
 
-  return (
+  return is_active ? (
     <>
       <div className="container">
         <div className="main-wrapper">
@@ -167,6 +163,8 @@ function WebPlayback() {
         </div>
       </div>
     </>
+  ) : (
+    <>asdasd</>
   );
 }
 

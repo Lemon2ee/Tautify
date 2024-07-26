@@ -1,5 +1,4 @@
-use std::path::PathBuf;
-
+use tauri::AppHandle;
 use tauri::{Listener, Manager};
 use tauri_plugin_store::StoreBuilder;
 use window_vibrancy::*;
@@ -23,11 +22,20 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_deep_link::init())
         .setup(|app| {
-            let handle = app.handle().clone();
-            let path = PathBuf::from("store.bin");
+            let handle: AppHandle = app.handle().clone();
             let mut store = StoreBuilder::new("app_data.bin").build(app.handle().clone());
-            store.load().expect("Failed to load store from disk");
-            app.manage(TauriState::new(path, store));
+
+            // if handle.path().app_data_dir().expect("Failed to get PathResolver").join("app_data.bin").exists() {
+            //     store.load().expect("Failed to load store from disk");
+            // };
+
+            let file_path: std::path::PathBuf =
+                handle.path().app_data_dir().unwrap().join("app_data.bin");
+            if file_path.exists() {
+                store.load().expect("Failed to load store from disk");
+            };
+
+            app.manage(TauriState::new(store));
             app.listen("deep-link://new-url", move |event| {
                 tauri::async_runtime::block_on(deep_link::handler(&event, &handle))
                     .expect("Error while handling deep link");

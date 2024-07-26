@@ -1,14 +1,25 @@
 use anyhow::anyhow;
+use chrono::Utc;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use tauri::{State, Wry};
+use serde_json::json;
+use tauri::{Emitter, Manager};
+
+use tauri::{AppHandle, State, Wry};
 use tauri_plugin_store::Store;
 
-use crate::state::TauriState;
+use crate::{deep_link::SpotifyTokenResponse, state::TauriState};
 
 #[tauri::command]
-pub async fn get_user_info(state: State<'_, TauriState>) -> Result<SpotifyResponse, String> {
+pub async fn get_user_info(
+    state: State<'_, TauriState>,
+    app: AppHandle,
+) -> Result<SpotifyResponse, String> {
+    println!("Getting user info");
+    refresh_user_token(app).await.map_err(|e| e.to_string())?;
+
     let store = state.store.lock().await;
+
     match user_info_fetch(&*store, &state.client).await {
         Ok(user_profile) => Ok(user_profile),
         Err(error) => Err(format!(
@@ -26,6 +37,94 @@ pub async fn get_user_token(state: State<'_, TauriState>) -> Result<String, Stri
         Some(value) => Ok(value.to_string()),
         None => Err("Access token not found".to_string()),
     }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct AccessTokenRefreshRequest {
+    grant_type: String,
+    refresh_token: String,
+    client_id: String,
+}
+
+pub async fn refresh_user_token(app: AppHandle) -> anyhow::Result<()> {
+    println!("in. ");
+    let url = "https://accounts.spotify.com/api/token";
+    let state = app.state::<TauriState>();
+    let client = state.client.clone();
+    let mut store = state.store.lock().await;
+
+    if store.has("expires_at") {
+        let expire_at = store
+            .get("expires_at")
+            .expect("Failed to get token")
+            .as_i64()
+            .unwrap();
+
+        if expire_at > Utc::now().timestamp() {
+            println!("Token is still valid");
+            return Ok(());
+        };
+    } else {
+        return Err(anyhow!("Refresh time not found in the store"));
+    }
+
+    if !store.has("refresh_token") {
+        return Err(anyhow!("Refresh token not found in the store"));
+    };
+
+    let token = store
+        .get("refresh_token")
+        .expect("Failed to get token")
+        .as_str()
+        .unwrap();
+
+    let client_id = "cae266e13c41412ead421bf581bc0609";
+
+    let request_body = AccessTokenRefreshRequest {
+        grant_type: "refresh_token".to_string(),
+        refresh_token: token.to_string(),
+        client_id: client_id.to_string(),
+    };
+
+    let response = client.post(url).form(&request_body).send().await.unwrap();
+
+    let response_json = response.json::<SpotifyTokenResponse>().await.unwrap();
+
+    store
+        .insert(
+            "access_token".to_string(),
+            json!(response_json.access_token),
+        )
+        .expect("Failed to store access_token");
+    store
+        .insert("token_type".to_string(), json!(response_json.token_type))
+        .expect("Failed to store token_type");
+    store
+        .insert("scope".to_string(), json!(response_json.scope))
+        .expect("Failed to store Spotify API scope");
+
+    store
+        .insert(
+            "refresh_token".to_string(),
+            json!(response_json.refresh_token),
+        )
+        .expect("Failed to store Spotify API refresh token");
+
+    let current_time = Utc::now().timestamp();
+    let expire_time = current_time + response_json.expires_in;
+
+    store
+        .insert("expires_at".to_string(), json!(expire_time))
+        .expect("Failed to store expires time");
+
+    store.save().expect("Failed to save to store");
+    // store.save_expire_in(response_json.expires_in);
+    app.emit("login_complete", "")
+        .expect("Failed to emit login_complete event");
+
+    // user_info_fetch(app).await.unwrap();
+
+    Ok(())
 }
 
 #[derive(Deserialize, Serialize, Debug)]
