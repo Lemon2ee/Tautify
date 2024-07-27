@@ -45,7 +45,11 @@ function WebPlayback() {
         const new_player = new window.Spotify.Player({
           name: "Aurora12",
           getOAuthToken: (cb) => {
-            cb(token);
+            invoke("get_user_token")
+              .catch((error) => console.log(error))
+              .then((token) => {
+                cb(JSON.parse(token as string));
+              });
           },
           volume: 0.5,
           enableMediaSession: true,

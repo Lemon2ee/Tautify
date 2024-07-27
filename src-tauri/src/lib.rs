@@ -15,7 +15,6 @@ mod auth;
 mod commands;
 mod deep_link;
 mod state;
-mod token_manager;
 mod utils;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]

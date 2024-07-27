@@ -85,14 +85,15 @@ pub(crate) async fn handler(event: &tauri::Event, app: &AppHandle) -> Result<()>
     }
 
     // TODO: this is bullshit
-    let client_id = "cae266e13c41412ead421bf581bc0609";
-    let redirect_uri = "taurispotify://api/callback/";
+    // let client_id = std::env::var("CLIENT_ID").expect("CLIENT_ID not found");
+    // let redirect_uri = std::env::var("REDIRECT_URI").expect("CLIENT_ID not found");
 
+    let redirect_uri = dotenvy_macro::dotenv!("REDIRECT_URI").to_string();
     let request = AccessTokenRequest {
         grant_type: "authorization_code".to_string(),
         code: callback_auth_code.clone(),
-        redirect_uri: redirect_uri.to_string(),
-        client_id: client_id.to_string(),
+        redirect_uri,
+        client_id: state.client_id.clone(),
         code_verifier: auth_verifier.to_string(),
     };
 

@@ -1,4 +1,4 @@
-use base64::{Engine as _, engine::general_purpose::URL_SAFE};
+use base64::{engine::general_purpose::URL_SAFE, Engine as _};
 use reqwest::Url;
 use serde_json::json;
 use sha2::{Digest, Sha256};
@@ -14,7 +14,7 @@ const AUTH_STATE_LENGTH: i32 = 16;
 #[tauri::command]
 pub async fn handle_sign_in(state: State<'_, TauriState>, app: AppHandle) -> Result<(), ()> {
     // TODO: Find a way to include env variables in the built app.
-    let client_id = "cae266e13c41412ead421bf581bc0609";
+    let client_id = dotenvy_macro::dotenv!("CLIENT_ID").to_string();
     let redirect_uri = "taurispotify://api/callback/";
     let scope = "user-read-private user-read-email streaming";
 

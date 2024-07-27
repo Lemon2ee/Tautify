@@ -92,12 +92,13 @@ pub async fn refresh_user_token(app: AppHandle) -> anyhow::Result<()> {
         .as_str()
         .unwrap();
 
-    let client_id = "cae266e13c41412ead421bf581bc0609";
+    // let client_id = std::env::var("CLIENT_ID").expect("CLIENT_ID not found");
+    let client_id = dotenvy_macro::dotenv!("CLIENT_ID").to_string();
 
     let request_body = AccessTokenRefreshRequest {
         grant_type: "refresh_token".to_string(),
         refresh_token: token.to_string(),
-        client_id: client_id.to_string(),
+        client_id: client_id,
     };
 
     let response = client.post(url).form(&request_body).send().await.unwrap();
