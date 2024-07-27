@@ -50,68 +50,121 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <div className="hidden md:block">
-      <div className="flex h-full max-h-screen flex-col gap-4 p-4 lg:gap-6 lg:p-6">
-        {/* <div className="flex h-14 items-center px-4 lg:h-[60px] lg:px-6">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
-            <Disc3 className="h-6 w-6" />
-            <span className="">Tauri-Spotify</span>
-          </Link>
-        </div> */}
-
-        <div className="flex-1">
-          <nav className="grid items-start text-sm font-medium">
-            {navItems.map((item, index) => (
-              <Link
-                key={index}
-                href={item.href}
-                className={`flex items-center gap-3 rounded px-3 py-2 ${
-                  item.path === "/"
-                    ? currentPath === item.path
-                    : currentPath.startsWith(item.path)
-                      ? "bg-zinc-700/80 shadow text-primary"
-                      : ""
-                }
+    <div className="grid min-h-0 gap-2 p-4 lg:gap-4 lg:p-6">
+      {navItems.map((item, index) => (
+        <Link
+          key={index}
+          href={item.href}
+          className={`flex items-center gap-3 rounded px-3 py-2 ${
+            item.path === "/"
+              ? currentPath === item.path
+              : currentPath.startsWith(item.path)
+                ? "bg-zinc-700/80 shadow text-primary"
+                : ""
+          }
                 text-muted-foreground transition-all hover:text-primary`}
-              >
-                {item.icon}
-                {item.text}
-                {item.badge}
-              </Link>
-            ))}
-          </nav>
-        </div>
-
-        <ScrollArea className="rounded-md h-full border bg-zinc-900/30">
-          {playlists ? (
-            <>
-              <div className="grid grid-cols-1 items-start">
-                {playlists.items.map(
-                  (playlist: CurrentUserPlaylistsResponsePlaylist, index) => (
-                    <Link
-                      key={index}
-                      href={"#"}
-                      onClick={() => handleClick(playlist.id)}
-                      className={`flex items-center gap-3 rounded px-3 py-2
+        >
+          {item.icon}
+          {item.text}
+          {item.badge}
+        </Link>
+      ))}
+      <div className="overflow-y-auto min-h-0 min-w-0">
+        {playlists ? (
+          <div className="grid h-full overflow-y-auto scrollbar-hide items-start rounded-md border bg-zinc-900/30">
+            {playlists.items.map(
+              (playlist: CurrentUserPlaylistsResponsePlaylist, index) => (
+                <Link
+                  key={index}
+                  href={"#"}
+                  onClick={() => handleClick(playlist.id)}
+                  className={`flex items-center gap-3 rounded px-3 py-2
                   text-muted-foreground transition-all hover:text-primary`}
-                    >
-                      <Avatar className="!rounded-sm">
-                        <AvatarImage src={playlist.images?.[0]?.url || ""} />
-                        <AvatarFallback className="!rounded-sm">
-                          <ListMusic className="h-5 w-5" />
-                        </AvatarFallback>
-                      </Avatar>
-                      {playlist.name}
-                    </Link>
-                  )
-                )}
-              </div>
-            </>
-          ) : (
-            <>Loading</>
-          )}
-        </ScrollArea>
+                >
+                  <Avatar className="!rounded-sm">
+                    <AvatarImage src={playlist.images?.[0]?.url || ""} />
+                    <AvatarFallback className="!rounded-sm">
+                      <ListMusic className="h-5 w-5" />
+                    </AvatarFallback>
+                  </Avatar>
+                  {playlist.name}
+                </Link>
+              )
+            )}
+          </div>
+        ) : (
+          <></>
+        )}
       </div>
     </div>
   );
+
+  // return (
+  //   <div>
+  //     {/* <div className="flex-1 max-h-screen">
+  //       <nav className="grid items-start text-sm font-medium">
+  //         {navItems.map((item, index) => (
+  //           <Link
+  //             key={index}
+  //             href={item.href}
+  //             className={`flex items-center gap-3 rounded px-3 py-2 ${
+  //               item.path === "/"
+  //                 ? currentPath === item.path
+  //                 : currentPath.startsWith(item.path)
+  //                   ? "bg-zinc-700/80 shadow text-primary"
+  //                   : ""
+  //             }
+  //               text-muted-foreground transition-all hover:text-primary`}
+  //           >
+  //             {item.icon}
+  //             {item.text}
+  //             {item.badge}
+  //           </Link>
+  //         ))}
+  //       </nav>
+  //     </div> */}
+
+  //     {playlists ? (
+  //       // <div className="grid h-full overflow-y-auto items-start rounded-md border bg-zinc-900/30">
+  //       //   {playlists.items.map(
+  //       //     (playlist: CurrentUserPlaylistsResponsePlaylist, index) => (
+  //       //       <Link
+  //       //         key={index}
+  //       //         href={"#"}
+  //       //         onClick={() => handleClick(playlist.id)}
+  //       //         className={`flex items-center gap-3 rounded px-3 py-2
+  //       //           text-muted-foreground transition-all hover:text-primary`}
+  //       //       >
+  //       //         <Avatar className="!rounded-sm">
+  //       //           <AvatarImage src={playlist.images?.[0]?.url || ""} />
+  //       //           <AvatarFallback className="!rounded-sm">
+  //       //             <ListMusic className="h-5 w-5" />
+  //       //           </AvatarFallback>
+  //       //         </Avatar>
+  //       //         {playlist.name}
+  //       //       </Link>
+  //       //     )
+  //       //   )}
+  //       // </div>
+  //       <div className="grid min-h-0">
+  //         <div>First</div>
+  //         <div>Second</div>
+  //         <div className="overflow-y-auto min-h-0 min-w-0">
+  //           Ullamcorper iaculis nisi non ac aenean. Cubilia mattis ultrices
+  //           aliquam curae molestie. Senectus lobortis vehicula metus accumsan
+  //           elementum lacus. Cubilia tempus eleifend aenean orci mattis pharetra
+  //           Ullamcorper iaculis nisi non ac aenean. Cubilia mattis ultrices
+  //           aliquam curae molestie. Senectus lobortis vehicula metus accumsan
+  //           elementum lacus. Cubilia tempus eleifend aenean orci mattis
+  //           pharetraUllamcorper iaculis nisi non ac aenean. Cubilia mattis
+  //           ultrices aliquam curae molestie. Senectus lobortis vehicula metus
+  //           accumsan elementum lacus. Cubilia tempus eleifend aenean orci mattis
+  //           pharetra
+  //         </div>
+  //       </div>
+  //     ) : (
+  //       <>Loading</>
+  //     )}
+  //   </div>
+  // );
 }

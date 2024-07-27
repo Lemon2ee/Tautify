@@ -1,6 +1,7 @@
 import React from "react";
 import Sidebar from "@/app/home/components/sidebar";
 import WebPlayback from "./spotify/webPlayback";
+import Player from "./components/player";
 
 export default function DashboardLayout({
   children,
@@ -8,16 +9,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <>
-      <div className="grid w-full md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr]">
+    <div className="grid grid-rows-[1fr_auto] min-h-0 h-full">
+      <div className="grid md:grid-cols-[220px_1fr] lg:grid-cols-[280px_1fr] h-full min-h-0">
         <Sidebar />
-        <WebPlayback />
-        <div className="flex flex-col overflow-hidden gap-4 p-4 lg:gap-6 lg:p-6">
-          <div className="flex flex-col flex-1 overflow-y-auto items-start rounded-md border bg-zinc-900/30">
-            {children}
-          </div>
-        </div>
+        {children}
       </div>
-    </>
+
+      <WebPlayback />
+      <Player />
+    </div>
   );
 }

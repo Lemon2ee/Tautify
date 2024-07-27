@@ -35,6 +35,7 @@ export interface Owner {
   uri: string;
   display_name: string;
 }
+
 export interface Tracks {
   href: string;
   limit: number;
@@ -44,12 +45,14 @@ export interface Tracks {
   total: number;
   items?: ItemsEntity[] | null;
 }
+
 export interface ItemsEntity {
   added_at: string;
   added_by: AddedBy;
   is_local: boolean;
   track: Track;
 }
+
 export interface AddedBy {
   external_urls: ExternalUrls;
   followers: Followers;
@@ -58,6 +61,7 @@ export interface AddedBy {
   type: string;
   uri: string;
 }
+
 export interface Track {
   album: Album;
   artists?: ArtistsEntity[] | null;

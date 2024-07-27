@@ -18,12 +18,21 @@ import { useEffect, useState } from "react";
 import useStore from "../../store";
 import { invoke } from "@tauri-apps/api/core";
 import { IndividualPlaylist } from "../../types/individualPlaylist";
+import { listen } from "@tauri-apps/api/event";
 
 export default function Component() {
   const selectedPlaylist = useStore((state) => state.selectedPlaylistID);
+  const deviceId = useStore((state) => state.spotifyPlayerID);
+
   const [playlistData, setPlaylistData] = useState<IndividualPlaylist | null>(
     null
   );
+
+  const handleTrackPlay = (trackUri: string) => {
+    invoke("play_track", { trackUri, deviceId }).catch((error) =>
+      console.log(error)
+    );
+  };
 
   useEffect(() => {
     if (selectedPlaylist !== "") {
@@ -39,77 +48,73 @@ export default function Component() {
 
   return (
     // flex row for playlist details
-    <>
-      {playlistData ? (
-        <div className="grid gap-8 max-w-4xl mx-auto px-4 py-8 md:px-6 md:py-12 w-full">
-          <div className="grid gap-4">
-            <div className="flex items-center gap-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={playlistData.images?.[0]?.url || ""}
-                alt="Playlist Cover"
-                width={120}
-                height={120}
-                className="rounded-lg"
-              />
-              <div className="grid gap-2">
-                <h1 className="text-2xl font-bold">{playlistData.name}</h1>
-                <p className="text-muted-foreground">
-                  {playlistData.description}
-                </p>
+    <div className="grid min-h-0 gap-2 p-4 lg:gap-4 lg:p-6 ">
+      <div className="overflow-y-auto rounded-md border scrollbar-hide bg-zinc-900/30">
+        {playlistData ? (
+          <div className="grid gap-8 max-w-4xl mx-auto px-4 py-8 md:px-6 md:py-12 w-full">
+            <div className="grid gap-4">
+              <div className="flex items-center gap-4">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={playlistData.images?.[0]?.url || ""}
+                  alt="Playlist Cover"
+                  width={120}
+                  height={120}
+                  className="rounded-lg"
+                />
+                <div className="grid gap-2">
+                  <h1 className="text-2xl font-bold">{playlistData.name}</h1>
+                  <p className="text-muted-foreground">
+                    {playlistData.description || "No description available"}
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="flex items-center gap-4">
-              <Button variant="outline" size="lg">
-                <PlayIcon className="mr-2 h-5 w-5" />
-                Play Playlist
-              </Button>
-              <Button variant="outline" size="lg">
-                <ShuffleIcon className="mr-2 h-5 w-5" />
-                Shuffle
-              </Button>
-              <Button variant="outline" size="lg">
-                <PlusIcon className="mr-2 h-5 w-5" />
-                Add to Library
-              </Button>
+            <div className="grid gap-4">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Title</TableHead>
+                    <TableHead>Artist</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead />
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {playlistData.tracks.items?.map((item) => (
+                    <TableRow key={item.track.id}>
+                      <TableCell className="font-medium">
+                        {item.track.name}
+                      </TableCell>
+                      <TableCell>{item.track.artists?.[0].name}</TableCell>
+                      <TableCell>
+                        {convertMsToMinutesAndSeconds(item.track.duration_ms)}
+                      </TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => {
+                            handleTrackPlay(item.track.uri);
+                          }}
+                        >
+                          <PlayIcon className="h-4 w-4" />
+                          <span className="sr-only">Play</span>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           </div>
-          <div className="grid gap-4">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Title</TableHead>
-                  <TableHead>Artist</TableHead>
-                  <TableHead>Duration</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {playlistData.tracks.items?.map((item) => (
-                  <TableRow key={item.track.id}>
-                    <TableCell className="font-medium">
-                      {item.track.name}
-                    </TableCell>
-                    <TableCell>{item.track.artists?.[0].name}</TableCell>
-                    <TableCell>
-                      {convertMsToMinutesAndSeconds(item.track.duration_ms)}
-                    </TableCell>
-                    <TableCell>
-                      <Button variant="outline" size="icon">
-                        <PlayIcon className="h-4 w-4" />
-                        <span className="sr-only">Play</span>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+        ) : (
+          <div className="flex w-full h-full justify-center items-center">
+            <span>Select a playlist to get started</span>
           </div>
-        </div>
-      ) : (
-        <div>Something is loading</div>
-      )}
-    </>
+        )}
+      </div>
+    </div>
   );
 }
 

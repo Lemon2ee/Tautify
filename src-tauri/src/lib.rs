@@ -1,5 +1,5 @@
 use tauri::AppHandle;
-use tauri::{Listener, Manager};
+use tauri::{Emitter, Listener, Manager};
 use tauri_plugin_store::StoreBuilder;
 use window_vibrancy::*;
 
@@ -7,6 +7,7 @@ use crate::auth::sign_in::handle_sign_in;
 use crate::auth::user::get_user_info;
 use crate::auth::user::get_user_playlists;
 use crate::auth::user::get_user_token;
+use crate::commands::player::play_track;
 use crate::commands::playlist::get_playlist_info;
 use crate::state::TauriState;
 
@@ -60,12 +61,22 @@ pub fn run() {
                 .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
             Ok(())
         })
+        .on_window_event(|window, event| match event {
+            tauri::WindowEvent::Destroyed => {
+                window
+                    .app_handle()
+                    .emit("app_closed", "")
+                    .expect("Failed to emit message when unfocused");
+            }
+            _ => {}
+        })
         .invoke_handler(tauri::generate_handler![
             handle_sign_in,
             get_user_info,
             get_user_token,
             get_user_playlists,
-            get_playlist_info
+            get_playlist_info,
+            play_track
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

@@ -62,7 +62,6 @@ pub async fn get_user_token(state: State<'_, TauriState>) -> Result<String, Stri
 }
 
 pub async fn refresh_user_token(app: AppHandle) -> anyhow::Result<()> {
-    println!("in. ");
     let url = "https://accounts.spotify.com/api/token";
     let state = app.state::<TauriState>();
     let client = state.client.clone();
