@@ -1,12 +1,12 @@
 {
-  "productName": "Tautify",
+  "productName": "Tautify2",
   "version": "0.1.0",
-  "identifier": "com.lemon2ee.tautify",
+  "identifier": "com.lemon2ee.tautify2",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run build"
+    "beforeDevCommand": "pnpm run dev",
+    "beforeBuildCommand": "pnpm run build"
   },
   "app": {
     "windows": [

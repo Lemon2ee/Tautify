@@ -2,9 +2,7 @@
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
   "description": "enables the default permissions",
-  "windows": [
-    "main"
-  ],
+  "windows": ["main"],
   "permissions": [
     "path:default",
     "event:default",
@@ -20,7 +18,6 @@
     "shell:default",
     "store:default",
     "stronghold:default",
-    "store:default",
     "shell:allow-open"
   ]
 }

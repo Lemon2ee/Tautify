@@ -50,18 +50,17 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <div className="grid min-h-0 gap-2 p-4 lg:gap-4 lg:p-6">
+    <div className="grid grid-rows-12 min-h-0 p-4 lg:p-6">
       {navItems.map((item, index) => (
         <Link
           key={index}
           href={item.href}
-          className={`flex items-center gap-3 rounded px-3 py-2 ${
-            item.path === "/"
-              ? currentPath === item.path
-              : currentPath.startsWith(item.path)
-                ? "bg-zinc-700/80 shadow text-primary"
-                : ""
-          }
+          className={`flex row-span-1 items-center gap-3 rounded px-3 py-2 ${item.path === "/"
+            ? currentPath === item.path
+            : currentPath.startsWith(item.path)
+              ? "bg-zinc-700/80 shadow text-primary"
+              : ""
+            }
                 text-muted-foreground transition-all hover:text-primary`}
         >
           {item.icon}
@@ -69,7 +68,8 @@ export default function Sidebar() {
           {item.badge}
         </Link>
       ))}
-      <div className="overflow-y-auto min-h-0 min-w-0">
+
+      <div className="row-span-10 overflow-y-auto min-h-0 min-w-0 mt-4">
         {playlists ? (
           <div className="grid h-full overflow-y-auto scrollbar-hide items-start rounded-md border bg-zinc-900/30">
             {playlists.items.map(
@@ -93,7 +93,8 @@ export default function Sidebar() {
             )}
           </div>
         ) : (
-          <></>
+          <div className="flex h-full overflow-y-auto scrollbar-hide justify-center justify-items-center rounded-md border bg-zinc-900/30">
+          </div>
         )}
       </div>
     </div>

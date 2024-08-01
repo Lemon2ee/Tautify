@@ -26,16 +26,19 @@ export default function LoginPop() {
   }, [router]);
 
   return (
-    <Card className="w-full max-w-sm m-auto">
-      <CardHeader>
-        <CardTitle className="text-2xl centered">Login</CardTitle>
-        <CardDescription>
-          Click the button below to open Spotify login page.
-        </CardDescription>
-      </CardHeader>
-      <CardFooter>
-        <LoginButton />
-      </CardFooter>
-    </Card>
+    <div className="flex h-full w-full justify-center">
+      <Card className="bg-zinc-700/80 max-w-sm m-auto">
+        <CardHeader>
+          <CardTitle className="text-2xl centered">Login</CardTitle>
+          <CardDescription>
+            Click the button below to open Spotify login page.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <LoginButton />
+        </CardFooter>
+      </Card>
+    </div>
+
   );
 }

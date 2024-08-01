@@ -16,12 +16,9 @@ pub async fn get_playlist_info(
     println!("Getting current user playlists");
     refresh_user_token(app).await.map_err(|e| e.to_string())?;
     let store = state.store.lock().await;
-    match fetch_playlist_info(&*store, &state.client, playlist_id).await {
+    match fetch_playlist_info(&store, &state.client, playlist_id).await {
         Ok(user_profile) => Ok(user_profile),
-        Err(error) => Err(format!(
-            "Error while fetching user profile: {}",
-            error.to_string()
-        )),
+        Err(error) => Err(format!("Error while fetching user profile: {}", error)),
     }
 }
 
@@ -54,6 +51,6 @@ async fn fetch_playlist_info(
         let body = response.text().await?;
         Ok(body)
     } else {
-        return Err(anyhow!(response.text().await.unwrap()));
+        Err(anyhow!(response.text().await.unwrap()))
     }
 }

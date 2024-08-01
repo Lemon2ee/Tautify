@@ -18,12 +18,9 @@ pub async fn play_track(
     log::info!("Trying to play track: {}", track_uri);
     refresh_user_token(app).await.map_err(|e| e.to_string())?;
     let store = state.store.lock().await;
-    match post_play_track(&*store, &state.client, track_uri, device_id).await {
+    match post_play_track(&store, &state.client, track_uri, device_id).await {
         Ok(user_profile) => Ok(user_profile),
-        Err(error) => Err(format!(
-            "Error while fetching user profile: {}",
-            error.to_string()
-        )),
+        Err(error) => Err(format!("Error while fetching user profile: {}", error)),
     }
 }
 
@@ -81,6 +78,6 @@ async fn post_play_track(
         let body = response.text().await?;
         Ok(body)
     } else {
-        return Err(anyhow!(response.text().await.unwrap()));
+        Err(anyhow!(response.text().await.unwrap()))
     }
 }

@@ -13,7 +13,6 @@ const AUTH_STATE_LENGTH: i32 = 16;
 
 #[tauri::command]
 pub async fn handle_sign_in(state: State<'_, TauriState>, app: AppHandle) -> Result<(), ()> {
-    // TODO: Find a way to include env variables in the built app.
     let client_id = dotenvy_macro::dotenv!("CLIENT_ID").to_string();
     let redirect_uri = "taurispotify://api/callback/";
     let scope = "user-read-private user-read-email streaming";
@@ -44,11 +43,11 @@ pub async fn handle_sign_in(state: State<'_, TauriState>, app: AppHandle) -> Res
         &[
             ("response_type", "code"),
             ("client_id", &client_id),
-            ("scope", &scope),
+            ("scope", scope),
             ("state", &spotify_auth_state),
             ("code_challenge_method", "S256"),
             ("code_challenge", &trimmed),
-            ("redirect_uri", &redirect_uri),
+            ("redirect_uri", redirect_uri),
         ],
     )
     .expect("Failed to construct authorization URL");
@@ -79,12 +78,4 @@ pub async fn handle_sign_in(state: State<'_, TauriState>, app: AppHandle) -> Res
         .expect("Failed to save state to file");
 
     Ok(())
-    //
-    // with_store(app.app_handle().clone(), stores, &state.path, |store| {
-    //     store.insert("auth_verifier".to_string(), json!(code_verifier))?;
-    //     store.insert("auth_state".to_string(), json!(spotify_auth_state))?;
-    //     store.save()?;
-    //     Ok(())
-    // })
-    // .map_err(|_| "An error occurred while storing the data".to_string())
 }

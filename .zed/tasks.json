@@ -1,0 +1,19 @@
+// Static tasks configuration.
+//
+// Example:
+[
+  {
+    "label": "build",
+    "command": "node --version && pnpm tauri build",
+    "env": {
+      "CI": "true"
+    }
+  },
+  {
+    "label": "preview",
+    "command": "pnpm tauri dev",
+    "env": {
+      "CI": "true"
+    }
+  }
+]

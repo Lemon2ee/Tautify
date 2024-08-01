@@ -60,14 +60,13 @@ pub fn run() {
                 .expect("Unsupported platform! 'apply_blur' is only supported on Windows");
             Ok(())
         })
-        .on_window_event(|window, event| match event {
-            tauri::WindowEvent::Destroyed => {
+        .on_window_event(|window, event| {
+            if let tauri::WindowEvent::Destroyed = event {
                 window
                     .app_handle()
                     .emit("app_closed", "")
                     .expect("Failed to emit message when unfocused");
             }
-            _ => {}
         })
         .invoke_handler(tauri::generate_handler![
             handle_sign_in,

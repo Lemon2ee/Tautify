@@ -42,12 +42,9 @@ pub async fn get_user_info(
 
     let store = state.store.lock().await;
 
-    match user_info_fetch(&*store, &state.client).await {
+    match user_info_fetch(&store, &state.client).await {
         Ok(user_profile) => Ok(user_profile),
-        Err(error) => Err(format!(
-            "Error while fetching user profile: {}",
-            error.to_string()
-        )),
+        Err(error) => Err(format!("Error while fetching user profile: {}", error)),
     }
 }
 
@@ -98,8 +95,10 @@ pub async fn refresh_user_token(app: AppHandle) -> anyhow::Result<()> {
     let request_body = AccessTokenRefreshRequest {
         grant_type: "refresh_token".to_string(),
         refresh_token: token.to_string(),
-        client_id: client_id,
+        client_id,
     };
+
+    println!("{:?}", request_body);
 
     let response = client.post(url).form(&request_body).send().await.unwrap();
 
@@ -167,7 +166,7 @@ async fn user_info_fetch(store: &Store<Wry>, client: &Client) -> anyhow::Result<
         let body = response.json::<SpotifyResponse>().await?;
         Ok(body)
     } else {
-        return Err(anyhow!(response.text().await.unwrap()));
+        Err(anyhow!(response.text().await.unwrap()))
     }
 }
 
@@ -231,12 +230,9 @@ pub async fn get_user_playlists(
     println!("Getting current user playlists");
     refresh_user_token(app).await.map_err(|e| e.to_string())?;
     let store = state.store.lock().await;
-    match fetch_current_user_playlists(&*store, &state.client).await {
+    match fetch_current_user_playlists(&store, &state.client).await {
         Ok(user_profile) => Ok(user_profile),
-        Err(error) => Err(format!(
-            "Error while fetching user profile: {}",
-            error.to_string()
-        )),
+        Err(error) => Err(format!("Error while fetching user profile: {}", error)),
     }
 }
 
@@ -269,6 +265,6 @@ async fn fetch_current_user_playlists(
         let body = response.json::<CurrentUserPlaylistsResponse>().await?;
         Ok(body)
     } else {
-        return Err(anyhow!(response.text().await.unwrap()));
+        Err(anyhow!(response.text().await.unwrap()))
     }
 }
