@@ -18,7 +18,6 @@ import { useEffect, useState, useRef } from "react";
 import useStore from "../../store";
 import { invoke } from "@tauri-apps/api/core";
 import { IndividualPlaylist } from "../../types/individualPlaylist";
-import { listen } from "@tauri-apps/api/event";
 
 export default function Component() {
   const selectedPlaylist = useStore((state) => state.selectedPlaylistID);
