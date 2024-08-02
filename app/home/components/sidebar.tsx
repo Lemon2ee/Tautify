@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator"
 import {
   CurrentUserPlaylistsResponse,
   CurrentUserPlaylistsResponsePlaylist,
@@ -24,9 +25,9 @@ const navItems = [
   {
     href: "#",
     icon: <UserRoundCog className="h-4 w-4" />,
-    text: "Profile",
+    text: "Settings",
     badge: null,
-    path: "/profile",
+    path: "/settings",
   },
 ];
 
@@ -50,15 +51,15 @@ export default function Sidebar() {
   }, []);
 
   return (
-    <div className="grid grid-rows-12 min-h-0 p-4 lg:p-6">
+    <div className="grid min-h-0 grid-rows-[max-content_max-content_1fr] pe-4 lg:pe-6 ps-2 lg:ps-4 pt-4 lg:pt-6">
       {navItems.map((item, index) => (
         <Link
           key={index}
           href={item.href}
-          className={`flex row-span-1 items-center gap-3 rounded px-3 py-2 ${item.path === "/"
+          className={`flex row-span-1 items-center gap-3 rounded py-2 px-4 ${item.path === "/"
             ? currentPath === item.path
             : currentPath.startsWith(item.path)
-              ? "bg-zinc-700/80 shadow text-primary"
+              ? " text-primary"
               : ""
             }
                 text-muted-foreground transition-all hover:text-primary`}
@@ -69,9 +70,12 @@ export default function Sidebar() {
         </Link>
       ))}
 
-      <div className="row-span-10 overflow-y-auto min-h-0 min-w-0 mt-4">
+
+      <div className="min-h-0 min-w-0 mt-4">
+        <Separator className="mb-2" />
+
         {playlists ? (
-          <div className="grid h-full overflow-y-auto scrollbar-hide items-start rounded-md border bg-zinc-900/30">
+          <div className="grid h-full overflow-y-auto scrollbar-hide items-start">
             {playlists.items.map(
               (playlist: CurrentUserPlaylistsResponsePlaylist, index) => (
                 <Link

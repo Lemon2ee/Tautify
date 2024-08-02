@@ -1,13 +1,14 @@
 use tauri::AppHandle;
 use tauri::{Emitter, Listener, Manager};
+use tauri_plugin_decorum::WebviewWindowExt;
 use tauri_plugin_store::StoreBuilder;
-use window_vibrancy::*;
+use window_vibrancy::*; // adds helper methods to WebviewWindow
 
 use crate::auth::sign_in::handle_sign_in;
 use crate::auth::user::get_user_info;
 use crate::auth::user::get_user_playlists;
 use crate::auth::user::get_user_token;
-use crate::commands::player::play_track;
+use crate::commands::player::post_play_track;
 use crate::commands::playlist::get_playlist_info;
 use crate::state::TauriState;
 
@@ -74,7 +75,7 @@ pub fn run() {
             get_user_token,
             get_user_playlists,
             get_playlist_info,
-            play_track
+            post_play_track
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

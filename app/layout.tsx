@@ -18,14 +18,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={inter.className + " h-screen overflow-hidden"}>
+      <body className={inter.className + " h-screen overflow-hidden bg-gradient-to-br from-40% from-[#0C0D15] via-60% via-[#191F31] to-80% to-slate-900"}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <div className="h-screen overflow-hidden bg-black/30">
+            {children}
+          </div>
         </ThemeProvider>
       </body>
     </html>

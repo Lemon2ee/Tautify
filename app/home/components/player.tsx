@@ -6,14 +6,12 @@ import useStore, { Track } from "@/app/store";
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
 import { useEffect } from "react";
 
 const TrackInfo = ({ track }: { track: Track }) => {
   const isValidTrack =
-    track.album.images[0].url && track.name && track.artists[0].name;
-
+    track ? track.album.images[0].url && track.name && track.artists[0].name : false;
   return (
     <>
       {isValidTrack ? (
@@ -72,7 +70,6 @@ export default function Player() {
 
     const interval = setInterval(() => {
       if (!isPaused) {
-        console.log("From interval ", location + 100);
         setLocation(location + 100);
       }
     }, 100);

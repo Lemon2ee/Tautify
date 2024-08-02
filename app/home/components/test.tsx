@@ -14,7 +14,7 @@ import {
   TableCell,
 } from "@/components/ui/table";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import useStore from "../../store";
 import { invoke } from "@tauri-apps/api/core";
 import { IndividualPlaylist } from "../../types/individualPlaylist";
@@ -23,13 +23,15 @@ import { listen } from "@tauri-apps/api/event";
 export default function Component() {
   const selectedPlaylist = useStore((state) => state.selectedPlaylistID);
   const deviceId = useStore((state) => state.spotifyPlayerID);
+  const scrollableContainerRef = useRef<HTMLDivElement>(null);
+
 
   const [playlistData, setPlaylistData] = useState<IndividualPlaylist | null>(
     null
   );
 
   const handleTrackPlay = (trackUri: string) => {
-    invoke("play_track", { trackUri, deviceId }).catch((error) =>
+    invoke("post_play_track", { trackUri, deviceId }).catch((error) =>
       console.log(error)
     );
   };
@@ -44,12 +46,16 @@ export default function Component() {
           )
         );
     }
+
+    if (scrollableContainerRef.current) {
+      scrollableContainerRef.current.scrollTop = 0;
+    }
   }, [selectedPlaylist]);
 
   return (
     // flex row for playlist details
-    <div className="grid min-h-0 gap-2 p-4 lg:gap-4 lg:p-6 ">
-      <div className="overflow-y-auto rounded-md border scrollbar-hide bg-zinc-900/30">
+    <div className="grid min-h-0 gap-2 lg:gap-4 p-3">
+      <div className="overflow-y-auto rounded-sm scrollbar-hide bg-zinc-700/30" ref={scrollableContainerRef}>
         {playlistData ? (
           <div className="grid gap-8 max-w-4xl mx-auto px-4 py-8 md:px-6 md:py-12 w-full">
             <div className="grid gap-4">
@@ -92,7 +98,7 @@ export default function Component() {
                       </TableCell>
                       <TableCell>
                         <Button
-                          variant="outline"
+                          variant="ghost"
                           size="icon"
                           onClick={() => {
                             handleTrackPlay(item.track.uri);

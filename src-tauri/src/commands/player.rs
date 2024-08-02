@@ -9,7 +9,7 @@ use crate::auth::user::refresh_user_token;
 use crate::state::TauriState;
 
 #[tauri::command]
-pub async fn play_track(
+pub async fn post_play_track(
     state: State<'_, TauriState>,
     app: AppHandle,
     track_uri: String,
@@ -18,7 +18,7 @@ pub async fn play_track(
     log::info!("Trying to play track: {}", track_uri);
     refresh_user_token(app).await.map_err(|e| e.to_string())?;
     let store = state.store.lock().await;
-    match post_play_track(&store, &state.client, track_uri, device_id).await {
+    match play_track(&store, &state.client, track_uri, device_id).await {
         Ok(user_profile) => Ok(user_profile),
         Err(error) => Err(format!("Error while fetching user profile: {}", error)),
     }
@@ -37,7 +37,7 @@ struct PlayRequest {
     uris: Option<Vec<String>>,
 }
 
-async fn post_play_track(
+async fn play_track(
     store: &Store<Wry>,
     client: &Client,
     track_uri: String,
