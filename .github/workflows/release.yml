@@ -29,6 +29,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Create .env file
+        shell: bash
+        env:
+            CLIENT_ID: ${{ secrets.CLIENT_ID }}
+        run: |
+          echo "CLIENT_ID=$SUPER_SECRET" >> src-tauri/.env
+
       - uses: pnpm/action-setup@v4
         with:
           version: latest
@@ -59,7 +66,6 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CLIENT_ID: ${{ secrets.CLIENT_ID }}
         with:
           tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
           releaseName: "App v__VERSION__"
