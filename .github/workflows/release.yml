@@ -34,7 +34,7 @@ jobs:
         env:
             CLIENT_ID: ${{ secrets.CLIENT_ID }}
         run: |
-          echo "CLIENT_ID=$SUPER_SECRET" >> src-tauri/.env
+          echo "CLIENT_ID=$CLIENT_ID" >> src-tauri/.env
 
       - uses: pnpm/action-setup@v4
         with:

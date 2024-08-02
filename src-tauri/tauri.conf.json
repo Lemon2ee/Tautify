@@ -1,6 +1,6 @@
 {
   "productName": "Tautify",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "identifier": "com.lemon2ee.tautify",
   "build": {
     "frontendDist": "../out",
