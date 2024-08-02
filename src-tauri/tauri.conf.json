@@ -1,7 +1,7 @@
 {
-  "productName": "Tautify2",
-  "version": "0.1.0",
-  "identifier": "com.lemon2ee.tautify2",
+  "productName": "Tautify",
+  "version": "0.1.1",
+  "identifier": "com.lemon2ee.tautify",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
