@@ -18,11 +18,24 @@ struct Image {
 }
 
 #[derive(Deserialize, Serialize, Debug)]
+struct Followers {
+    total: Option<u32>,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
+struct ExplicitContentStatus {
+    filter_enabled: bool,
+    filter_locked: bool,
+}
+
+#[derive(Deserialize, Serialize, Debug)]
 pub struct SpotifyResponse {
     country: String,
     display_name: String,
     email: String,
     images: Vec<Image>,
+    followers: Followers,
+    explicit_content: ExplicitContentStatus,
 }
 
 #[derive(Debug, Serialize, Deserialize)]

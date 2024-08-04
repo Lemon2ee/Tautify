@@ -13,26 +13,30 @@ import {
   CurrentUserPlaylistsResponsePlaylist,
 } from "@/app/types/playlists";
 import useStore from "@/app/store";
+import { useRouter } from 'next/navigation'
+import { Button } from "@/components/ui/button";
+
 
 const navItems = [
   {
-    href: "#",
+    href: "/home/playlists",
     icon: <Home className="h-4 w-4" />,
     text: "Home",
     badge: null,
-    path: "/home",
+    path: "/home/playlists",
   },
   {
-    href: "#",
+    href: "/home/settings",
     icon: <UserRoundCog className="h-4 w-4" />,
     text: "Settings",
     badge: null,
-    path: "/settings",
+    path: "/home/settings",
   },
 ];
 
 export default function Sidebar() {
   const currentPath = usePathname();
+  const router = useRouter();
   const [playlists, setPlaylists] =
     useState<CurrentUserPlaylistsResponse | null>(null);
 
@@ -80,7 +84,7 @@ export default function Sidebar() {
               (playlist: CurrentUserPlaylistsResponsePlaylist, index) => (
                 <Link
                   key={index}
-                  href={"#"}
+                  href={"/home/playlists"}
                   onClick={() => handleClick(playlist.id)}
                   className={`flex items-center gap-3 rounded px-3 py-2
                   text-muted-foreground transition-all hover:text-primary`}

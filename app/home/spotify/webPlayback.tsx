@@ -4,6 +4,7 @@ import React, { useEffect, useState } from "react";
 import { invoke } from "@tauri-apps/api/core";
 import useStore from "@/app/store";
 import { listen } from "@tauri-apps/api/event";
+import { tauri_store } from "@/app/store";
 
 function WebPlayback() {
   const [token, setToken] = useState<string | null>(null);

@@ -10,7 +10,7 @@ export default function Init() {
 
   useEffect(() => {
     invoke("get_user_info")
-      .then(() => router.push("/home"))
+      .then(() => router.push("/home/playlists"))
       .catch(() => router.push("/login"));
     // const unlisten = listen("login_complete", () => {
     //   router.push("/home");

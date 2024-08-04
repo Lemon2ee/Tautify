@@ -6,8 +6,10 @@ import useStore, { Track } from "@/app/store";
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
+import { Slider } from "@/components/ui/playbackSlider";
 import { useEffect } from "react";
+import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
+
 
 const TrackInfo = ({ track }: { track: Track }) => {
   const isValidTrack =
@@ -57,12 +59,6 @@ export default function Player() {
 
   const player = useStore((state) => state.spotifyPlayer);
 
-  const borderColorClass = !isActive
-    ? "border-gray-400"
-    : isActive && !isPaused
-      ? "border-emerald-400"
-      : "border-red-600";
-
   useEffect(() => {
     if (!isActive) {
       return;
@@ -79,26 +75,14 @@ export default function Player() {
 
   return (
     <div className={`bg-background shadow-lg z-50`}>
-      <Slider
-        value={[Math.round(location / 1000)]}
-        max={Math.round(duration / 1000)}
-        step={0.1}
-      />
-      <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
+      <div className="w-full mx-auto px-4 py-3 flex items-center gap-10 ">
         <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            {/* <img
-              src={track ? track.album.images[0].url : ""}
-              alt="Album cover"
-              width={40}
-              height={40}
-              className="rounded-md"
-            /> */}
+          <div className="flex items-center gap-2 min-w-40 truncate">
             <TrackInfo track={track} />
           </div>
         </div>
-        <div className="flex items-center gap-4">
+
+        <div className="flex items-center gap-2">
           <Button
             onClick={() => {
               if (player) {
@@ -110,7 +94,7 @@ export default function Player() {
             variant="ghost"
             size="icon"
           >
-            <RewindIcon className="w-5 h-5" />
+            <SkipBack className="w-4 h-4" />
             <span className="sr-only">Previous</span>
           </Button>
           <Button
@@ -123,9 +107,9 @@ export default function Player() {
             size="icon"
           >
             {isPaused ? (
-              <PlayIcon className="w-5 h-5" />
+              <Play className="w-4 h-4" />
             ) : (
-              <XIcon className="w-5 h-5" />
+              <Pause className="w-4 h-4" />
             )}
             <span className="sr-only">Play/Pause</span>
           </Button>
@@ -140,13 +124,23 @@ export default function Player() {
             variant="ghost"
             size="icon"
           >
-            <FastForwardIcon className="w-5 h-5" />
+            <SkipForward className="w-4 h-4" />
             <span className="sr-only">Next</span>
           </Button>
           {/* <div className="w-40 md:w-64">
-            <Progress value={40} />
-          </div> */}
+              <Progress value={40} />
+            </div> */}
         </div>
+
+        <div className="flex flex-1 items-center gap-4">
+          <Slider
+            value={[Math.round(location / 1000)]}
+            max={Math.round(duration / 1000)}
+            step={0.1}
+          />
+        </div>
+
+
       </div>
     </div>
   );
@@ -172,25 +166,6 @@ function FastForwardIcon(props: any) {
   );
 }
 
-function PlayIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="6 3 20 12 6 21 6 3" />
-    </svg>
-  );
-}
-
 function RewindIcon(props: any) {
   return (
     <svg
@@ -207,26 +182,6 @@ function RewindIcon(props: any) {
     >
       <polygon points="11 19 2 12 11 5 11 19" />
       <polygon points="22 19 13 12 22 5 22 19" />
-    </svg>
-  );
-}
-
-function XIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <path d="M18 6 6 18" />
-      <path d="m6 6 12 12" />
     </svg>
   );
 }

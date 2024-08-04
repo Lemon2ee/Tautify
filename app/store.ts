@@ -1,4 +1,7 @@
 import { create } from "zustand";
+import { Store } from '@tauri-apps/plugin-store';
+import { listen } from '@tauri-apps/api/event'
+
 
 export type Track = {
   name: string;
@@ -33,6 +36,8 @@ interface AppState {
   setTrackDuration: (trackDuration: number) => void;
   trackLocation: number;
   setTrackLocation: (trackLocation: number) => void;
+  defaultVolume: number;
+  setDefaultVolume: (defaultVolume: number) => void;
 }
 
 const useStore = create<AppState>((set) => ({
@@ -57,6 +62,28 @@ const useStore = create<AppState>((set) => ({
   trackLocation: 0,
   setTrackLocation: (trackLocation: number) =>
     set({ trackLocation: trackLocation }),
+  defaultVolume: 0,
+  setDefaultVolume: (defaultVolume: number) =>
+    set({ defaultVolume: defaultVolume }),
 }));
 
+const tauri_store = new Store('frontend_store.bin');
+
+// Create an async function to handle the store operations
+async function initializeStore() {
+  if (!await tauri_store.has('defaultVolume')) {
+    await tauri_store.set('defaultVolume', 0.5);
+  } else {
+    const defaultVolume = await tauri_store.get('defaultVolume') as number;
+    useStore.setState({ defaultVolume });
+    console.log(defaultVolume)
+  }
+}
+
+// Call the async function to initialize the store
+initializeStore().catch((err) => {
+  console.error('Failed to initialize store:', err);
+});
+
+export { tauri_store };
 export default useStore;
