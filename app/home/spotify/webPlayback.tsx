@@ -18,10 +18,16 @@ function WebPlayback() {
   const setDuration = useStore((state) => state.setTrackDuration);
   const setLocation = useStore((state) => state.setTrackLocation);
 
+  const [deviceName, setDeviceName] = useState<string>("Tautify Client");
+
   useEffect(() => {
     invoke("get_user_token")
       .catch((error) => console.log(error))
       .then((token) => setToken(JSON.parse(token as string)));
+
+    invoke("get_device_name")
+      .catch((error) => console.log(error))
+      .then((value) => setDeviceName(value as string));
   }, []);
 
   useEffect(() => {
@@ -44,7 +50,7 @@ function WebPlayback() {
 
       window.onSpotifyWebPlaybackSDKReady = () => {
         const new_player = new window.Spotify.Player({
-          name: "Aurora12",
+          name: deviceName,
           getOAuthToken: (cb) => {
             invoke("get_user_token")
               .catch((error) => console.log(error))
@@ -59,7 +65,7 @@ function WebPlayback() {
         setSpotifyPlayer(new_player);
       };
     }
-  }, [setSpotifyPlayer, token]);
+  }, [setSpotifyPlayer, token, deviceName]);
 
   useEffect(() => {
     if (spotifyPlayer) {

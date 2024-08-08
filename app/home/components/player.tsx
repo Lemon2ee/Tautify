@@ -6,8 +6,8 @@ import useStore, { Track } from "@/app/store";
  * Documentation: https://v0.dev/docs#integrating-generated-code-into-your-nextjs-app
  */
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/playbackSlider";
-import { useEffect } from "react";
+import { Slider } from "@/components/ui/slider";
+import { useEffect, useState } from "react";
 import { Play, Pause, SkipBack, SkipForward } from 'lucide-react';
 
 
@@ -59,8 +59,12 @@ export default function Player() {
 
   const player = useStore((state) => state.spotifyPlayer);
 
+  const [configVolume, setConfigVolume] = useState<number>(Math.round(location / 1000));
+  const [changing, setChanging] = useState<boolean>(false);
+
+
   useEffect(() => {
-    if (!isActive) {
+    if (!isActive || changing) {
       return;
     }
 
@@ -71,7 +75,11 @@ export default function Player() {
     }, 100);
 
     return () => clearInterval(interval);
-  }, [duration, isActive, isPaused, location, setLocation]);
+  }, [duration, isActive, isPaused, location, setLocation, configVolume, setConfigVolume, changing]);
+
+  useEffect(() => {
+    setConfigVolume(Math.round(location / 1000))
+  }, [location]);
 
   return (
     <div className={`bg-background shadow-lg z-50`}>
@@ -134,54 +142,25 @@ export default function Player() {
 
         <div className="flex flex-1 items-center gap-4">
           <Slider
-            value={[Math.round(location / 1000)]}
+            defaultValue={[0]}
+            value={[configVolume]}
+            onValueChange={(e) => {
+              setChanging(true);
+              setConfigVolume(e[0])
+            }}
+            onValueCommit={(e) => {
+              setChanging(false);
+              setConfigVolume(e[0]);
+              if (player) {
+                player.seek(configVolume * 1000).then(() => {
+                  console.log('Changed position!');
+                });
+              }
+            }}
             max={Math.round(duration / 1000)}
-            step={0.1}
-          />
+            step={1} />
         </div>
-
-
       </div>
     </div>
-  );
-}
-
-function FastForwardIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="13 19 22 12 13 5 13 19" />
-      <polygon points="2 19 11 12 2 5 2 19" />
-    </svg>
-  );
-}
-
-function RewindIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <polygon points="11 19 2 12 11 5 11 19" />
-      <polygon points="22 19 13 12 22 5 22 19" />
-    </svg>
   );
 }

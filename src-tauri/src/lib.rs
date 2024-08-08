@@ -3,11 +3,11 @@ use tauri::{Listener, Manager};
 use tauri_plugin_store::StoreBuilder;
 
 use crate::auth::sign_in::handle_sign_in;
-use crate::auth::user::get_user_info;
-use crate::auth::user::get_user_playlists;
-use crate::auth::user::get_user_token;
+use crate::auth::user::{get_user_info, get_user_playlists, get_user_token};
+use crate::commands::device_info::get_device_name;
 use crate::commands::player::post_play_track;
 use crate::commands::playlist::get_playlist_info;
+
 use crate::state::TauriState;
 
 mod auth;
@@ -60,7 +60,8 @@ pub fn run() {
             get_user_token,
             get_user_playlists,
             get_playlist_info,
-            post_play_track
+            post_play_track,
+            get_device_name
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
